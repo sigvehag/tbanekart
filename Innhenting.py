@@ -14,18 +14,19 @@ name = ""
 dest = ""
 expTime = ""
 reqTime = 0
+shouldBreak = False
 
 for data in e[0][3][1][1:]:
     for subdata in data:
         if subdata.tag == "{http://www.siri.org.uk/siri}EstimatedCalls":
-            for subsubdata in subdata:
-
-                for subsubsubdata in subsubdata:
+            for estimatedCall in subdata:
+                for metaData in estimatedCall:
+                    shouldBreak = False
                     if (
-                        subsubsubdata.tag
+                        metaData.tag
                         == "{http://www.siri.org.uk/siri}ExpectedDepartureTime"
                     ):
-                        expTime = subsubsubdata.text
+                        expTime = metaData.text
                         for fmt in (
                             "%Y-%m-%dT%H:%M:%S+01:00",
                             "%Y-%m-%dT%H:%M:%S.%f+01:00",
@@ -36,22 +37,29 @@ for data in e[0][3][1][1:]:
                                 )
 
                                 if reqTime.total_seconds() > 0:
-                                    for data in subsubdata:
+                                    for metaData in estimatedCall:
 
                                         if (
-                                            data.tag
+                                            metaData.tag
                                             == "{http://www.siri.org.uk/siri}StopPointName"
                                         ):
-                                            name = data.text
-                                    for data in subsubdata:
+                                            name = metaData.text
+                                    for metaData in estimatedCall:
                                         if (
-                                            data.tag
+                                            metaData.tag
                                             == "{http://www.siri.org.uk/siri}DestinationDisplay"
                                         ):
-                                            dest = data.text
+                                            dest = metaData.text
 
                                     print(name, dest, reqTime)
+                                    shouldBreak = True
+                                    
 
                             except ValueError:
                                 pass
-
+                    if shouldBreak:
+                        break
+                if shouldBreak:
+                    break        
+        # if shouldBreak:
+        #     break
