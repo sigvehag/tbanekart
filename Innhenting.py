@@ -11,11 +11,18 @@ with open('stops.csv') as csvfile:
     reader = csv.reader(csvfile)
     next(reader)                                # Skips Header
     quayDict = {}
+    forkDict = {}
     for row in reader:
         fork, name, intID, quay = row
         try:
             quay = ast.literal_eval(quay)       # Parses String to list
             quayDict.update(dict.fromkeys(quay, name))
+        except SyntaxError:
+            pass
+        
+        try:
+            fork = ast.literal_eval(fork)
+            forkDict.update(dict.fromkeys(fork, name))
         except SyntaxError:
             pass
 
@@ -59,7 +66,11 @@ def parseAndPrint(sch):
                 try:
                     stopName = quayDict[stopName[9:]]
                 except KeyError:
-                    pass
+                    try:
+                        stopName = forkDict[stopName]
+                    except KeyError:
+                        stopName = "!!!!!" + stopName + "!!!!!"
+                        pass
 
                 print(line[9], "leaves from", stopName, "in", willLeaveIn)
                 break

@@ -1,102 +1,102 @@
 Forkortelse,Navn,ID,Quay
-FRS,Frognerseteren,0,"[""12150""]"
-VKO,Voksenkollen,1,"[""11638""]"
-LIV,Lillevann,2,
-SKO,Skogen,3,"[""11612""]"
-VLA,Voksenlia,4,"[""11609""]"
-HOK,Holmenkollen,5,
-BES,Besserud,6,
-MID,Midtstuen,7,
-SKÅ,Skådalen,8,
-VET,Vettakollen,9,
-GUL,Gulleråsen,10,
-GRÅ,Gråkammen,11,
-SLE,Slemdal,12,
-RIS,Ris,13,
-,Gaustad,14,
-VIN,Vinderen,15,
-STE,Steinerud,16,
-FRØ,Frøen,17,
-MAJ,Majorstuen,18,"[""8028""]"
-,Nationaltheatret,19,
-STT,Stortinget,20,"[""7257"", ""7255""]"
-JER,Jernbanetorget,21,"[""7183""]"
-GRØ,Grønland,22,"[""11928"", ""11929""]"
-TØY,Tøyen,23,
-ENS,Ensjø,24,"[""11107""]"
-HFY,Helsfyr,25,"[""11134"", ""11135""]"
-BRY,Brynseng,26,"[""11177""]"
-HØY,Høyenhall,27,"[""10883""]"
-MAN,Manglerud,28,
-RYE,Ryen,29,
-BRA,Brattklikollen,30,
-KAR,Karlsrud,31,
-LAM,Lambertseter,32,
-MUN,Munkelia,33,
-BKR,Bergkrystallen,34,"[""10681"", ""10682""]"
+['FRS'],Frognerseteren,0,"[""12150""]"
+['VKO'],Voksenkollen,1,"[""11637"",""11638""]"
+['LIV'],Lillevann,2,"[""11617"", ""11619""]"
+['SKO'],Skogen,3,"[""11611"", ""11612""]"
+['VLA'],Voksenlia,4,"[""11609"", ""11610""]"
+['HOK'],Holmenkollen,5,"[""11605"",""11606""]"
+['BES'],Besserud,6,"[""11593"", ""11594""]"
+['MID'],Midtstuen,7,"[""11576"",""11577""]"
+['SKÅ'],Skådalen,8,"[""11570"", ""11571""]"
+['VET'],Vettakollen,9,"[""11567"", ""11569""]"
+['GUL'],Gulleråsen,10,"[""11561""]"
+['GRÅ'],Gråkammen,11,"[""11552"", ""11553""]"
+['SLE'],Slemdal,12,"[""11517"", ""11518""]"
+['RIS'],Ris,13,"[""11505"", ""11506""]"
+,Gaustad,14,"[""11478"",""11479""]"
+['VIN'],Vinderen,15,"[""11460"", ""11461""]"
+['STE'],Steinerud,16,"[""11447"",""11449""]"
+['FRØ'],Frøen,17,"[""11439"",""11441""]"
+"['MAJ', 'MAJQ']",Majorstuen,18,"[""8028"", ""102023""]"
+,Nationaltheatret,19,"[""7333"", ""7334""]"
+['STT'],Stortinget,20,"[""7256"", ""7257"", ""7255""]"
+['JER'],Jernbanetorget,21,"[""7183"", ""7184""]"
+['GRØ'],Grønland,22,"[""11928"", ""11929""]"
+['TØY'],Tøyen,23,"[""11895"",""11897"", ""11898""]"
+['ENS'],Ensjø,24,"[""11106"",""11107""]"
+['HFY'],Helsfyr,25,"[""11134"", ""11135""]"
+['BRY'],Brynseng,26,"[""11176"", ""11177"", ""11178"", ""11179""]"
+['HØY'],Høyenhall,27,"[""10882"",""10883""]"
+['MAN'],Manglerud,28,"[""10850"", ""10851""]"
+['RYE'],Ryen,29,"[""10818"", ""10819""]"
+['BRA'],Brattklikollen,30,"[""12292"", ""12293""]"
+['KAR'],Karlsrud,31,"[""12285"",""12286""]"
+['LAM'],Lambertseter,32,"[""10629"", ""10630""]"
+['MUN'],Munkelia,33,"[""10666"", ""10667""]"
+['BKR'],Bergkrystallen,34,"[""10681"", ""10682""]"
 ,Ellingsrudåsen,35,"[""10330"", ""10331""]"
-,Furuset,36,
-,Lindeberg,37,"[""10270""]"
+,Furuset,36,"[""10304"",""10305""]"
+,Lindeberg,37,"[""10269"",""10270""]"
 ,Trosterud,38,"[""11373"", ""11374""]"
-,Haugerud,39,
-,Tveita,40,"[""11310""]"
-HEL,Hellerud,41,"[""11273"", ""11274""]"
-,Borgen,42,"[""11932""]"
-,Smestad,43,
-,Makrellbekken,44,"[""11643""]"
-,Holmen,45,
-,Hovseter,46,
-,Røa,47,"[""11726""]"
-,Ekraveien,48,
-,Eiksmarka,49,"[""6590""]"
-,Lijordet,50,"[""6606""]"
+,Haugerud,39,"[""11340"",""11342""]"
+,Tveita,40,"[""11309"",""11310""]"
+['HEL'],Hellerud,41,"[""11273"", ""11274""]"
+,Borgen,42,"[""11932"", ""11933""]"
+['SMEA'],Smestad,43,"[""11944"",""11945""]"
+,Makrellbekken,44,"[""11643"",""11644""]"
+,Holmen,45,"[""11670"",""11669""]"
+,Hovseter,46,"[""11686"", ""11687""]"
+,Røa,47,"[""11726"",""11729""]"
+,Ekraveien,48,"[""11749"",""11750""]"
+,Eiksmarka,49,"[""6590"",""6591""]"
+,Lijordet,50,"[""6606"", ""6607""]"
 ,Østerås,51,"[""6658"", ""6659""]"
 ,Kolsås,52,"[""7319""]"
-,Hauger,53,
-,Gjettum,54,
-,Avløs,55,
-,Haslum,56,
-,Gjønnes,57,
-,Bekkestua,58,"[""6824""]"
-,Ringstabekk,59,
-,Jar,60,"[""6522""]"
-,Bjørnsletta,61,"[""12037""]"
-,Åsjordet,62,
-,Ullernåsen,63,"[""12011""]"
-,Montebello,64,
-GOD,Godlia,65,
-SÅS,Skøyenåsen,66,
-OPP,Oppsal,67,
-ULS,Ulsrud,68,
-BØL,Bøler,69,
-BOG,Bogerud,70,
-SKU,Skullerud,71,
-MOR,Mortensrud,72,"[""10421"", ""10423""]"
-BLI,Blindern,73,"[""11635""]"
-FOR,Forskningsparken,74,"[""11655""]"
-UST,Ullevål stadion,75,"[""11289""]"
-NYD,Nydalen,76,"[""11151"", ""11153""]"
-STR,Storo,77,"[""11117"", ""11115""]"
-SIN,Sinsen,78,
+,Hauger,53,"[""7304"",""7305""]"
+,Gjettum,54,"[""7213"",""7217""]"
+,Avløs,55,"[""7131"",""7132""]"
+,Haslum,56,"[""7021"",""7022""]"
+,Gjønnes,57,"[""6928"",""6929""]"
+,Bekkestua,58,"[""6823"",""6824""]"
+,Ringstabekk,59,"[""6764"",""6765""]"
+,Jar,60,"[""6521"", ""6522""]"
+,Bjørnsletta,61,"[""12037"", ""12038""]"
+,Åsjordet,62,"[""12025"",""12026""]"
+,Ullernåsen,63,"[""12011"", ""12012""]"
+,Montebello,64,"[""11964"",""11965""]"
+['GOD'],Godlia,65,"[""10948"",""10949""]"
+['SÅS'],Skøyenåsen,66,"[""10953"",""10954""]"
+['OPP'],Oppsal,67,"[""10995"",""10998""]"
+['ULS'],Ulsrud,68,"[""10716"",""10717""]"
+['BØL'],Bøler,69,"[""10749"", ""10750""]"
+['BOG'],Bogerud,70,"[""10768"",""10769""]"
+['SKU'],Skullerud,71,"[""10787"",""10788""]"
+['MOR'],Mortensrud,72,"[""10421"", ""10423""]"
+['BLI'],Blindern,73,"[""11635"",""11636""]"
+['FOR'],Forskningsparken,74,"[""11654"",""11655""]"
+['UST'],Ullevål stadion,75,"[""11287"",""11289""]"
+['NYD'],Nydalen,76,"[""11151"", ""11153""]"
+"['STR', 'STRB']",Storo,77,"[""11117"", ""11115""]"
+"['SIN','SINB']",Sinsen,78,"[""11077"",""11078""]"
 ,Løren,79,"[""102017"", ""102018""]"
-,Økern,80,"[""10827""]"
-,Risløkka,81,
-,Vollebekk,82,
-,Linderud,83,
-,Veitvet,84,"[""10939""]"
-,Rødtvet,85,
-,Kalbakken,86,
-,Ammerud,87,"[""10692""]"
-,Grorud,88,
-,Romsås,89,
-,Rommen,90,"[""10461""]"
-,Stovner,91,"[""10488""]"
+,Økern,80,"[""10825"",""10827""]"
+,Risløkka,81,"[""10863"", ""10861""]"
+,Vollebekk,82,"[""10884"",""10885""]"
+,Linderud,83,"[""10906"",""10905""]"
+,Veitvet,84,"[""10938"",""10939""]"
+,Rødtvet,85,"[""10639"",""10640""]"
+,Kalbakken,86,"[""10651"",""10652""]"
+,Ammerud,87,"[""10692"", ""10693""]"
+,Grorud,88,"[""10718"",""10719""]"
+,Romsås,89,"[""10602"",""10603""]"
+,Rommen,90,"[""10461"", ""10462""]"
+,Stovner,91,"[""10488"", ""10489""]"
 ,Vestli,92,"[""10508""]"
-,Hasle,93,"[""11066""]"
-CBP,Carl Berners plass,94,"[""11026""]"
-BER,Berg,95,
-,Tåsen,96,"[""11341""]"
-,Østhorn,97,
-,Holstein,98,
-,Kringsjå,99,
-SOG,Sognsvann,100,"[""11411""]"
+,Hasle,93,"[""11065"",""11066""]"
+['CBP'],Carl Berners plass,94,"[""11026"", ""11027""]"
+['BER'],Berg,95,"[""11317"",""11319""]"
+,Tåsen,96,"[""11339"",""11341""]"
+,Østhorn,97,"[""11371"",""11372""]"
+,Holstein,98,"[""11388"", ""11389""]"
+,Kringsjå,99,"[""11400"", ""11401""]"
+['SOG'],Sognsvann,100,"[""11411""]"
