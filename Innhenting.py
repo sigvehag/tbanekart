@@ -57,12 +57,13 @@ def parseAndPrint(sch):
                 for fmt in ("%Y-%m-%dT%H:%M:%S+01:00", "%Y-%m-%dT%H:%M:%S.%f+01:00"):
                     try:
                         willLeaveIn = (datetime.strptime(expectedDeparture, fmt) - datetime.now()).total_seconds()
+                        willLeaveIn = int(round(willLeaveIn))
                     except ValueError:
                         pass
             
             ### When the next stop is found it prints the info 
             ### and breaks out of the current lines loop
-            if willLeaveIn > 0 and willLeaveIn < 300:
+            if willLeaveIn > 0 and willLeaveIn < 90:
                 try:
                     stopName = quayDict[stopName[9:]]
                 except KeyError:
