@@ -9,14 +9,16 @@ import sched  # Probably redundant
 import time
 import csv
 import ast
-import neopixel
-import board
+
 
 ### NeoPixel
+import neopixel
+import board
 pixel_pin = board.D18
 num_pixels = 150
 ORDER = neopixel.RGB
 pixels = neopixel.NeoPixel(pixel_pin, num_pixels, brightness=1, auto_write=False,pixel_order=ORDER)
+
 
 ### Edit these to change light properties
 timeToLight = 90
@@ -32,6 +34,9 @@ lightValue = np.array([(60, 200, 255), (255, 60, 0), (170, 30, 170), (0, 0, 255)
 fadeMatrix = np.zeros((101,3,30))
 lightValueMatrix = np.zeros((101,3))
 stationDataMatrix = np.zeros((101,4))
+
+### Variables
+frameCounter = 0
 
 ### Timing
 # scheduler = sched.scheduler(time.time, time.sleep)
@@ -102,7 +107,7 @@ response = requests.get("https://api.entur.org/anshar/1.0/rest/et?datasetId=RUT"
 root = ET.fromstring(response.content)
 
 ### Parser
-def parseAndReturn():
+def GetAndParse():
     dataMatrix = np.zeros((101,4))   # Line (dir 1), time (dir 1), Line (dir 2), time (dir 2)
     #print("--------------------", datetime.now(), "--------------------")
     trips = root[0][3][1]
@@ -148,23 +153,20 @@ def parseAndReturn():
                         stopID = "!!!!!" + stopID + "!!!!!"
                         pass
 
-                print("STOPIDDDD", stopID)
-
-                #if (direction == 1):
-                if (dataMatrix[stopID][1] == 0): 
-                    dataMatrix[stopID][0] = line[9]
-                    dataMatrix[stopID][1] = willLeaveIn
-                elif (dataMatrix[stopID][1] > willLeaveIn):
+                if (direction == 1):
+                    if (dataMatrix[stopID][1] == 0): 
                         dataMatrix[stopID][0] = line[9]
                         dataMatrix[stopID][1] = willLeaveIn
-                """
+                    elif (dataMatrix[stopID][1] > willLeaveIn):
+                            dataMatrix[stopID][0] = line[9]
+                            dataMatrix[stopID][1] = willLeaveIn
                 else:
-                    if (dataMatrix[stopID][2:4] == [0, 0]): 
-                        dataMatrix[stopID][2:4] = [line[9], willLeaveIn]
-                    else:
-                        if (dataMatrix[stopID][3] > willLeaveIn):
-                            dataMatrix[stopID][2:4] = [line[9], willLeaveIn]
-                """
+                    if (dataMatrix[stopID][3] == 0): 
+                        dataMatrix[stopID][2] = line[9]
+                        dataMatrix[stopID][3] = willLeaveIn
+                    elif (dataMatrix[stopID][3] > willLeaveIn):
+                        dataMatrix[stopID][2] = line[9]
+                        dataMatrix[stopID][3] = willLeaveIn
 
                 break
     return dataMatrix
@@ -172,18 +174,32 @@ def parseAndReturn():
 
 def changeLight():
     global stationDataMatrix
+    global fadeMatrix
+    global lightValueMatrix
+    global frameCounter
 
     print("ran", time.time())
-    if (int(round(time.time())) % 1 ==0): #secondsBetweenCalls == 0):
-        stationDataMatrix = parseAndReturn()
-        newColors = CreateColor(stationDataMatrix[:, 0], stationDataMatrix[:, 1])
-        print(newColors[0])
-        i = 0
-        while(i<101):
-            pixels[i] = (newColors[i, 0].astype(int), newColors[i, 1].astype(int), newColors[i, 2].astype(int))
-            i+=1
-        pixels.show()
+    if (int(round(time.time())) %secondsBetweenCalls == 0):
+        frameCounter = 0
+        stationDataMatrix = GetAndParse()
+        newColors = CreateColor(stationDataMatrix)
+        fadeMatrix = GenerateFadeMatrix(lightValueMatrix, newColors)
+        print(fadeMatrix)
         print("-------- Matrix Updated ---------", frames)
+        
+
+    lightValueMatrix = fadeMatrix[:,:,frameCounter]
+    i = 0
+    
+    while(i<101):
+        pixels[i] = (lightValueMatrix[i, 0], lightValueMatrix[i, 1], lightValueMatrix[i, 2])
+        i+=1
+    
+    pixels.show()
+    frameCounter += 1
+        
+    
+    
 
 """
     if (int(round(time.time())) % 10 == 0):
@@ -191,41 +207,52 @@ def changeLight():
             print(value[0], "leaves in", value[1], "from", value[2])
 """
 
-def CreateColor(line, stationTime):
-    percentageValue = maxBrightness - ((maxBrightness-minBrightness)/timeToLight) * stationTime
-    return lightValue[line.astype(int)-1] * percentageValue[:, None]
+def CreateColor(dataMatrix):
+    percentageValue1 = maxBrightness - ((maxBrightness-minBrightness)/timeToLight) * dataMatrix[:,1]
+    percentageValue2 = maxBrightness - ((maxBrightness-minBrightness)/timeToLight) * dataMatrix[:,3]
+    color1 = lightValue[dataMatrix[:,0].astype(int)-1] * percentageValue1[:, None]
+    color2 = lightValue[dataMatrix[:,2].astype(int)-1] * percentageValue2[:, None]
+    return np.concatenate((color1.astype(int), color2.astype(int)), axis=1)
 
 
-def findLightStep(oldColor, newColor):
-    stepArray = np.array((frames, 3))
+def GenerateFadeMatrix(oldColor, newColor):
+    ### TODO: Write two functions. One for only one metro approaching, one to blink between two
+    # Make an if test. If odd number, choose one color, if even choose the other.
+
+    # This is for one color
+    stepArray = np.zeros((101, 3, frames))
+    print(stepArray)
+    
+    red_diff = newColor[:,0] - oldColor[:,0]
+    green_diff = newColor[:,1] - oldColor[:,1]
+    blue_diff  = newColor[:,2] - oldColor[:,2]
+
     i = 0
-    red_diff = newColor[0] - oldColor[0]
-    green_diff = newColor[1] - oldColor[1]
-    blue_diff  = newColor[2] - oldColor[2]
-
     while i < frames:
-        stepArray[i][0] = oldColor[0] + i * red_diff / frames
-        stepArray[i][1] = oldColor[1] + i * green_diff / frames
-        stepArray[i][2] = oldColor[2] + i * blue_diff / frames
+        stepArray[:,0,i] = oldColor[:,0] + i * red_diff / frames
+        stepArray[:,1,i] = oldColor[:,1] + i * green_diff / frames
+        stepArray[:,2,i] = oldColor[:,2] + i * blue_diff / frames
         i+=1
     
     return stepArray
     
 
-
+    """
     if (newColor[3]):
         step = (maxBrightness * 255 - minBrightness * 255) / (timeToLight)
         newHalfColor = lightValue[newData[0]-1] * step * (timeToLight - newData[1] / 2)
         newMax = step * (timeToLight - newData[1])
         
         newcolor * (min  + newpercentage)
+    """
 
 if __name__ == "__main__":
     # Create an interval. 
-    interval = Interval(1, changeLight, args=[])
+    interval = Interval(0.5, changeLight, args=[])
     print ("Starting Interval, press CTRL+C to stop.")
     interval.start() 
 
+    stationDataMatrix = GetAndParse()
     while True:
         try:
             time.sleep(0.1)
@@ -234,7 +261,3 @@ if __name__ == "__main__":
             interval.stop()
             break
 
-
-
-#scheduler.enter(1, 1, parseAndReturn, (scheduler,))
-#scheduler.run()
