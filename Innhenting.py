@@ -192,7 +192,7 @@ def changeLight():
     i = 0
     
     while(i<101):
-        pixels[i] = (lightValueMatrix[i, 0], lightValueMatrix[i, 1], lightValueMatrix[i, 2])
+        pixels[i] = (int(lightValueMatrix[i, 0]), int(lightValueMatrix[i, 1]), int(lightValueMatrix[i, 2]))
         i+=1
     
     pixels.show()
