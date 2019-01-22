@@ -16,7 +16,7 @@ import board
 pixel_pin = board.D18
 num_pixels = 150
 ORDER = neopixel.RGB
-pixels = neopixel.NeoPixel(pixel_pin,num_pixels,brightness=1,auto_write=False,pixel_order=ORDER)
+pixels = neopixel.NeoPixel(pixel_pin, num_pixels, brightness=1, auto_write=False,pixel_order=ORDER)
 
 ### Edit these to change light properties
 timeToLight = 90
@@ -26,7 +26,7 @@ secondsBetweenCalls = 30
 stepsPerSecond = 2
 frames = secondsBetweenCalls * stepsPerSecond
 
-lightValue = np.array([(50, 200, 255), (200, 95, 25), (125, 25, 200), (0, 60, 150), (10, 230, 70), (0,0,0)])
+lightValue = np.array([(60, 200, 255), (255, 60, 0), (170, 30, 170), (0, 0, 255), (0, 255, 0), (0,0,0)])
 
 ### Matrixes
 fadeMatrix = np.zeros((101,3,30))
@@ -177,10 +177,10 @@ def changeLight():
     if (int(round(time.time())) % 1 ==0): #secondsBetweenCalls == 0):
         stationDataMatrix = parseAndReturn()
         newColors = CreateColor(stationDataMatrix[:, 0], stationDataMatrix[:, 1])
-        
+        print(newColors[0])
         i = 0
         while(i<101):
-            pixels[i] = newColors[i]
+            pixels[i] = (newColors[i, 0].astype(int), newColors[i, 1].astype(int), newColors[i, 2].astype(int))
             i+=1
         pixels.show()
         print("-------- Matrix Updated ---------", frames)
