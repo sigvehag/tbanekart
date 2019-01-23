@@ -10,6 +10,7 @@ import time
 import csv
 import ast
 
+# TODO: No need to get value for every parse. Can parse value every 30 seconds, and only update every 2 minutes?
 
 ### NeoPixel
 import neopixel
@@ -19,16 +20,17 @@ num_pixels = 150
 ORDER = neopixel.RGB
 pixels = neopixel.NeoPixel(pixel_pin, num_pixels, brightness=1, auto_write=False,pixel_order=ORDER)
 
-
 ### Edit these to change light properties
 timeToLight = 90
 minBrightness = 0.2
 maxBrightness = 1
 secondsBetweenCalls = 30
 stepsPerSecond = 2
-frames = secondsBetweenCalls * stepsPerSecond
+lowestRGBSum = 50
+lowestRGBValue = 5
+frames = int(secondsBetweenCalls * stepsPerSecond * 1.1)
 
-lightValue = np.array([(60, 200, 255), (255, 60, 0), (170, 30, 170), (0, 0, 255), (0, 255, 0), (0,0,0)])
+lightValue = np.array([(60, 200, 255), (255, 60, 0), (255, 45, 255), (0, 0, 255), (0, 255, 0), (0,0,0)])
 
 ### Matrixes
 fadeMatrix = np.zeros((101,3,30))
@@ -109,7 +111,6 @@ root = ET.fromstring(response.content)
 ### Parser
 def GetAndParse():
     dataMatrix = np.zeros((101,4))   # Line (dir 1), time (dir 1), Line (dir 2), time (dir 2)
-    #print("--------------------", datetime.now(), "--------------------")
     trips = root[0][3][1]
     for trip in trips.iter('{http://www.siri.org.uk/siri}EstimatedVehicleJourney'):
         line = "Kunne ikke finne linje"
@@ -178,38 +179,38 @@ def changeLight():
     global lightValueMatrix
     global frameCounter
 
-    print("ran", time.time())
-    if (int(round(time.time())) %secondsBetweenCalls == 0):
-        frameCounter = 0
-        stationDataMatrix = GetAndParse()
-        newColors = CreateColor(stationDataMatrix)
-        fadeMatrix = GenerateFadeMatrix(lightValueMatrix, newColors)
-        print(fadeMatrix)
-        print("-------- Matrix Updated ---------", frames)
-        
-
-    lightValueMatrix = fadeMatrix[:,:,frameCounter]
+    if frameCounter >= secondsBetweenCalls * stepsPerSecond:
+        CreateMatrix()
+    
+    lightValueMatrix = fadeMatrix[frameCounter,:,:]
     i = 0
     
+    #print("Changed Light", time.time(), "\n", lightValueMatrix[19])
+
     while(i<101):
-        pixels[i] = (int(lightValueMatrix[i, 0]), int(lightValueMatrix[i, 1]), int(lightValueMatrix[i, 2]))
+        pixels[i] = (lightValueMatrix[i, 0], lightValueMatrix[i, 1], lightValueMatrix[i, 2])
         i+=1
-    
+
     pixels.show()
     frameCounter += 1
-        
-    
-    
 
-"""
-    if (int(round(time.time())) % 10 == 0):
-        for value in newMatrix:
-            print(value[0], "leaves in", value[1], "from", value[2])
-"""
+
+def CreateMatrix():
+    global stationDataMatrix
+    global fadeMatrix
+    global lightValueMatrix
+    global frameCounter
+
+    frameCounter = 0
+    stationDataMatrix = GetAndParse()
+    newColors = CreateColor(stationDataMatrix)
+    fadeMatrix = GenerateFadeMatrix(lightValueMatrix, newColors)
+    #print("-------- Matrix Updated ---------")
+    
 
 def CreateColor(dataMatrix):
-    percentageValue1 = maxBrightness - ((maxBrightness-minBrightness)/timeToLight) * dataMatrix[:,1]
-    percentageValue2 = maxBrightness - ((maxBrightness-minBrightness)/timeToLight) * dataMatrix[:,3]
+    percentageValue1 = maxBrightness - ((maxBrightness-minBrightness)/timeToLight) * (dataMatrix[:,1] - 30)
+    percentageValue2 = maxBrightness - ((maxBrightness-minBrightness)/timeToLight) * (dataMatrix[:,3] - 30)
     color1 = lightValue[dataMatrix[:,0].astype(int)-1] * percentageValue1[:, None]
     color2 = lightValue[dataMatrix[:,2].astype(int)-1] * percentageValue2[:, None]
     return np.concatenate((color1.astype(int), color2.astype(int)), axis=1)
@@ -220,8 +221,8 @@ def GenerateFadeMatrix(oldColor, newColor):
     # Make an if test. If odd number, choose one color, if even choose the other.
 
     # This is for one color
-    stepArray = np.zeros((101, 3, frames))
-    print(stepArray)
+    #if (newColor[:,3:6,:]==[0,0,0]):
+    stepArray = np.zeros((frames, 101, 3))
     
     red_diff = newColor[:,0] - oldColor[:,0]
     green_diff = newColor[:,1] - oldColor[:,1]
@@ -229,30 +230,24 @@ def GenerateFadeMatrix(oldColor, newColor):
 
     i = 0
     while i < frames:
-        stepArray[:,0,i] = oldColor[:,0] + i * red_diff / frames
-        stepArray[:,1,i] = oldColor[:,1] + i * green_diff / frames
-        stepArray[:,2,i] = oldColor[:,2] + i * blue_diff / frames
+        stepArray[i,:,0] = oldColor[:,0] + i * red_diff / frames
+        stepArray[i,:,1] = oldColor[:,1] + i * green_diff / frames
+        stepArray[i,:,2] = oldColor[:,2] + i * blue_diff / frames
         i+=1
     
-    return stepArray
-    
-
-    """
-    if (newColor[3]):
-        step = (maxBrightness * 255 - minBrightness * 255) / (timeToLight)
-        newHalfColor = lightValue[newData[0]-1] * step * (timeToLight - newData[1] / 2)
-        newMax = step * (timeToLight - newData[1])
-        
-        newcolor * (min  + newpercentage)
-    """
+    stepArray[stepArray > 255*maxBrightness] = 255*maxBrightness
+    stepArray[stepArray.sum(axis=2) < lowestRGBSum] = [0,0,0]
+    stepArray[stepArray < lowestRGBValue] = 0
+    return stepArray.astype(int)
 
 if __name__ == "__main__":
+    # Create Matrix
+    CreateMatrix()
     # Create an interval. 
-    interval = Interval(0.5, changeLight, args=[])
+    interval = Interval(1/stepsPerSecond, changeLight, args=[])
     print ("Starting Interval, press CTRL+C to stop.")
-    interval.start() 
+    interval.start()
 
-    stationDataMatrix = GetAndParse()
     while True:
         try:
             time.sleep(0.1)
