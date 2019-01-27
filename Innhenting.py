@@ -158,22 +158,23 @@ def ReadAndParse():
                         stopID = int(forkDict[stopID])
                     except KeyError:
                         stopID = "!!!!!" + stopID + "!!!!!"
+                        print(stopID)
                         pass
 
                 if (direction == 1):
-                    if (dataMatrix[stopID][1] == 0): 
-                        dataMatrix[stopID][0] = line[9]
-                        dataMatrix[stopID][1] = willLeaveIn
-                    elif (dataMatrix[stopID][1] > willLeaveIn):
-                            dataMatrix[stopID][0] = line[9]
-                            dataMatrix[stopID][1] = willLeaveIn
+                    if (dataMatrix[stopID,1] == 0): 
+                        dataMatrix[stopID,0] = line[9]
+                        dataMatrix[stopID,1] = willLeaveIn
+                    elif (dataMatrix[stopID,1] > willLeaveIn):
+                            dataMatrix[stopID,0] = line[9]
+                            dataMatrix[stopID,1] = willLeaveIn
                 else:
-                    if (dataMatrix[stopID][3] == 0): 
-                        dataMatrix[stopID][2] = line[9]
-                        dataMatrix[stopID][3] = willLeaveIn
-                    elif (dataMatrix[stopID][3] > willLeaveIn):
-                        dataMatrix[stopID][2] = line[9]
-                        dataMatrix[stopID][3] = willLeaveIn
+                    if (dataMatrix[stopID,3] == 0): 
+                        dataMatrix[stopID,2] = line[9]
+                        dataMatrix[stopID,3] = willLeaveIn
+                    elif (dataMatrix[stopID,3] > willLeaveIn):
+                        dataMatrix[stopID,2] = line[9]
+                        dataMatrix[stopID,3] = willLeaveIn
 
                 break
     return dataMatrix
@@ -183,6 +184,8 @@ def ChangeLight():
     global fadeMatrix
     global lightValueMatrix
     global frameCounter
+	
+    print (lightValueMatrix[19])
 
     if int(time.time() - startTime) % 300 == 0:
         ImportData()
@@ -190,12 +193,12 @@ def ChangeLight():
         time.sleep(2)
 
 
-    if frameCounter >= secondsBetweenCalls * stepsPerSecond:
-        CreateMatrix()
+    if frameCounter == secondsBetweenCalls * stepsPerSecond:
+        CreateMatrix(lightValueMatrix)
     
     lightValueMatrix = fadeMatrix[frameCounter,:,:]
     i = 0
-    
+	
     #print("Changed Light", time.time(), "\n", lightValueMatrix[19])
 
     while(i<101):
@@ -203,21 +206,20 @@ def ChangeLight():
         i+=1
 
     pixels.show()
+    #print (lightValueMatrix[19])
     # print(lightValueMatrix[19])
     frameCounter += 1
 
 
-def CreateMatrix():
+
+def CreateMatrix(oldColor):
     global stationDataMatrix
     global fadeMatrix
-    global lightValueMatrix
     global frameCounter
-
-    frameCounter = 0
     stationDataMatrix = ReadAndParse()
     newColors = CreateColor(stationDataMatrix)
-    fadeMatrix = GenerateFadeMatrix(lightValueMatrix, newColors)
-    #print("-------- Matrix Updated ---------")
+    fadeMatrix = GenerateFadeMatrix(oldColor, newColors)
+    frameCounter = 0
     
 
 def CreateColor(dataMatrix):
@@ -233,20 +235,63 @@ def GenerateFadeMatrix(oldColor, newColor):
     # Make an if test. If odd number, choose one color, if even choose the other.
 
     # This is for one color
-    #if (newColor[:,3:6,:]==[0,0,0]):
     stepArray = np.zeros((frames, 101, 3))
-    
-    red_diff = newColor[:,0] - oldColor[:,0]
-    green_diff = newColor[:,1] - oldColor[:,1]
-    blue_diff  = newColor[:,2] - oldColor[:,2]
 
-    i = 0
-    while i < frames:
-        stepArray[i,:,0] = oldColor[:,0] + i * red_diff / frames
-        stepArray[i,:,1] = oldColor[:,1] + i * green_diff / frames
-        stepArray[i,:,2] = oldColor[:,2] + i * blue_diff / frames
-        i+=1
+    directionOne = np.unique(np.where(newColor[:,0:3]==[0,0,0]))
+    directionTwo = np.unique(np.where(newColor[:,3:6]==[0,0,0]))
+    directionBoth = np.unique(np.where((newColor[:,0:3]!=[0,0,0]) & (newColor[:,3:6]!=[0,0,0])))
+    print(directionBoth)
+
+    for index in directionOne:
+        red_diff = newColor[index,0] - oldColor[index,0]
+        green_diff = newColor[index,1] - oldColor[index,1]
+        blue_diff  = newColor[index,2] - oldColor[index,2]
+
+        i = 0
+        while i < frames:
+            stepArray[i,index,0] = oldColor[index,0] + i * red_diff / frames
+            stepArray[i,index,1] = oldColor[index,1] + i * green_diff / frames
+            stepArray[i,index,2] = oldColor[index,2] + i * blue_diff / frames
+            i+=1
+
+    for index in directionTwo:
+        red_diff = newColor[index,3] - oldColor[index,0]
+        green_diff = newColor[index,4] - oldColor[index,1]
+        blue_diff  = newColor[index,5] - oldColor[index,2]
+
+        i = 0
+        while i < frames:
+            stepArray[i,index,0] = oldColor[index,0] + i * red_diff / frames
+            stepArray[i,index,1] = oldColor[index,1] + i * green_diff / frames
+            stepArray[i,index,2] = oldColor[index,2] + i * blue_diff / frames
+            i+=1
     
+    for index in directionBoth:
+        red_diffOne = newColor[index,0] - oldColor[index,0]
+        green_diffOne = newColor[index,1] - oldColor[index,1]
+        blue_diffOne  = newColor[index,2] - oldColor[index,2]
+        
+        red_diffTwo = newColor[index,3] - oldColor[index,0]
+        green_diffTwo = newColor[index,4] - oldColor[index,1]
+        blue_diffTwo  = newColor[index,5] - oldColor[index,2]
+        
+        i = 0
+        switch = 0
+        while i < frames:
+            if switch == 0:
+                stepArray[i,index,0] = oldColor[index,0] + i * red_diffOne / frames
+                stepArray[i,index,1] = oldColor[index,1] + i * green_diffOne / frames
+                stepArray[i,index,2] = oldColor[index,2] + i * blue_diffOne / frames
+                if i % 3 == 0:
+                    switch = 1
+            elif switch == 1:
+                stepArray[i,index,0] = oldColor[index,0] + i * red_diffTwo / frames
+                stepArray[i,index,1] = oldColor[index,1] + i * green_diffTwo / frames
+                stepArray[i,index,2] = oldColor[index,2] + i * blue_diffTwo / frames
+                if i % 3 == 0:
+                    switch = 0
+            i += 1
+
     stepArray[stepArray > 255*maxBrightness] = 255*maxBrightness
     stepArray[stepArray.sum(axis=2) < lowestRGBSum] = [0,0,0]
     stepArray[stepArray < lowestRGBValue] = 0
@@ -255,7 +300,7 @@ def GenerateFadeMatrix(oldColor, newColor):
 if __name__ == "__main__":
     # Create Matrix
     ImportData()
-    CreateMatrix()
+    CreateMatrix(lightValueMatrix)
     # Create an interval. 
     interval = Interval(1/stepsPerSecond, ChangeLight, args=[])
     print ("Starting Interval, press CTRL+C to stop.")
