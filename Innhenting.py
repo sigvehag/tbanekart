@@ -12,6 +12,7 @@ import ast
 
 # TODO: No need to get value for every parse. Can parse value every 30 seconds, and only update every 2 minutes?
 
+
 ### NeoPixel
 import neopixel
 import board
@@ -19,6 +20,7 @@ pixel_pin = board.D18
 num_pixels = 150
 ORDER = neopixel.RGB
 pixels = neopixel.NeoPixel(pixel_pin, num_pixels, brightness=1, auto_write=False,pixel_order=ORDER)
+
 
 ### Edit these to change light properties
 timeToLight = 90
@@ -39,6 +41,8 @@ stationDataMatrix = np.zeros((101,4))
 
 ### Variables
 frameCounter = 0
+startTime = 0
+root = 0
 
 ### Timing
 # scheduler = sched.scheduler(time.time, time.sleep)
@@ -105,11 +109,13 @@ with open('stops.csv') as csvfile:
             pass
 
 ### Data Import
-response = requests.get("https://api.entur.org/anshar/1.0/rest/et?datasetId=RUT")
-root = ET.fromstring(response.content)
+def ImportData():
+    global root
+    response = requests.get("https://api.entur.org/anshar/1.0/rest/et?datasetId=RUT")
+    root = ET.fromstring(response.content)
 
 ### Parser
-def GetAndParse():
+def ReadAndParse():
     dataMatrix = np.zeros((101,4))   # Line (dir 1), time (dir 1), Line (dir 2), time (dir 2)
     trips = root[0][3][1]
     for trip in trips.iter('{http://www.siri.org.uk/siri}EstimatedVehicleJourney'):
@@ -171,13 +177,18 @@ def GetAndParse():
 
                 break
     return dataMatrix
-            
 
-def changeLight():
+def ChangeLight():
     global stationDataMatrix
     global fadeMatrix
     global lightValueMatrix
     global frameCounter
+
+    if int(time.time() - startTime) % 300 == 0:
+        ImportData()
+        print("Imported Data")
+        time.sleep(2)
+
 
     if frameCounter >= secondsBetweenCalls * stepsPerSecond:
         CreateMatrix()
@@ -192,6 +203,7 @@ def changeLight():
         i+=1
 
     pixels.show()
+    # print(lightValueMatrix[19])
     frameCounter += 1
 
 
@@ -202,7 +214,7 @@ def CreateMatrix():
     global frameCounter
 
     frameCounter = 0
-    stationDataMatrix = GetAndParse()
+    stationDataMatrix = ReadAndParse()
     newColors = CreateColor(stationDataMatrix)
     fadeMatrix = GenerateFadeMatrix(lightValueMatrix, newColors)
     #print("-------- Matrix Updated ---------")
@@ -242,9 +254,10 @@ def GenerateFadeMatrix(oldColor, newColor):
 
 if __name__ == "__main__":
     # Create Matrix
+    ImportData()
     CreateMatrix()
     # Create an interval. 
-    interval = Interval(1/stepsPerSecond, changeLight, args=[])
+    interval = Interval(1/stepsPerSecond, ChangeLight, args=[])
     print ("Starting Interval, press CTRL+C to stop.")
     interval.start()
 
