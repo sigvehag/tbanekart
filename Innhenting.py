@@ -23,12 +23,12 @@ pixels = neopixel.NeoPixel(pixel_pin, num_pixels, brightness=1, auto_write=False
 
 
 ### Edit these to change light properties
-timeToLight = 90
+timeToLight = 120
 minBrightness = 0.2
 maxBrightness = 1
-secondsBetweenCalls = 30
+secondsBetweenCalls = 10
 stepsPerSecond = 2
-lowestRGBSum = 50
+lowestRGBSum = 10
 lowestRGBValue = 5
 frames = int(secondsBetweenCalls * stepsPerSecond * 1.1)
 
@@ -45,7 +45,6 @@ startTime = 0
 root = 0
 
 ### Timing
-# scheduler = sched.scheduler(time.time, time.sleep)
 class Interval(object):
 
     def __init__(self, interval, function, args=[], kwargs={}):
@@ -122,6 +121,7 @@ def ReadAndParse():
         line = "Kunne ikke finne linje"
         willLeaveIn = 0
         direction = 1
+        vehicleJourneyRef = 0
 
         try:
             line = trip.find('{http://www.siri.org.uk/siri}LineRef').text
@@ -132,21 +132,23 @@ def ReadAndParse():
             direction = int(trip.find('{http://www.siri.org.uk/siri}DirectionRef').text)
         except AttributeError:
             pass
-        
+		        
         ### All of one lines stops
         stops = trip.find('{http://www.siri.org.uk/siri}EstimatedCalls')
+        
         for stop in stops.iter('{http://www.siri.org.uk/siri}EstimatedCall'):
+            
             stopID = stop.find('{http://www.siri.org.uk/siri}StopPointRef').text 
-                   
+                  
             for data in stop.iter('{http://www.siri.org.uk/siri}ExpectedDepartureTime'):
                 willLeaveIn = 0
-                expectedDeparture = data.text                
-                for fmt in ("%Y-%m-%dT%H:%M:%S+01:00", "%Y-%m-%dT%H:%M:%S.%f+01:00"):
-                    try:
-                        willLeaveIn = (datetime.strptime(expectedDeparture, fmt) - datetime.now()).total_seconds()
-                        willLeaveIn = int(round(willLeaveIn))
-                    except ValueError:
-                        pass
+                expectedDeparture = data.text[:19]		
+                try:
+                    willLeaveIn = (datetime.strptime(expectedDeparture, '%Y-%m-%dT%H:%M:%S') - datetime.now()).total_seconds()
+                    willLeaveIn = int(round(willLeaveIn))
+                except ValueError:
+                    print("Failed parsing time")
+                    pass
             
             ### When the next stop is found it prints the info 
             ### and breaks out of the current lines loop
@@ -159,7 +161,7 @@ def ReadAndParse():
                     except KeyError:
                         stopID = "!!!!!" + stopID + "!!!!!"
                         print(stopID)
-                        pass
+                        break
 
                 if (direction == 1):
                     if (dataMatrix[stopID,1] == 0): 
@@ -184,8 +186,6 @@ def ChangeLight():
     global fadeMatrix
     global lightValueMatrix
     global frameCounter
-	
-    print (lightValueMatrix[19])
 
     if int(time.time() - startTime) % 300 == 0:
         ImportData()
@@ -195,21 +195,16 @@ def ChangeLight():
 
     if frameCounter == secondsBetweenCalls * stepsPerSecond:
         CreateMatrix(lightValueMatrix)
+    frameCounter += 1
     
     lightValueMatrix = fadeMatrix[frameCounter,:,:]
     i = 0
-	
-    #print("Changed Light", time.time(), "\n", lightValueMatrix[19])
 
     while(i<101):
         pixels[i] = (lightValueMatrix[i, 0], lightValueMatrix[i, 1], lightValueMatrix[i, 2])
         i+=1
 
     pixels.show()
-    #print (lightValueMatrix[19])
-    # print(lightValueMatrix[19])
-    frameCounter += 1
-
 
 
 def CreateMatrix(oldColor):
@@ -223,24 +218,19 @@ def CreateMatrix(oldColor):
     
 
 def CreateColor(dataMatrix):
-    percentageValue1 = maxBrightness - ((maxBrightness-minBrightness)/timeToLight) * (dataMatrix[:,1] - 30)
-    percentageValue2 = maxBrightness - ((maxBrightness-minBrightness)/timeToLight) * (dataMatrix[:,3] - 30)
+    percentageValue1 = maxBrightness - ((maxBrightness-minBrightness)/timeToLight) * (dataMatrix[:,1] - secondsBetweenCalls)
+    percentageValue2 = maxBrightness - ((maxBrightness-minBrightness)/timeToLight) * (dataMatrix[:,3] - secondsBetweenCalls)
     color1 = lightValue[dataMatrix[:,0].astype(int)-1] * percentageValue1[:, None]
     color2 = lightValue[dataMatrix[:,2].astype(int)-1] * percentageValue2[:, None]
     return np.concatenate((color1.astype(int), color2.astype(int)), axis=1)
 
 
 def GenerateFadeMatrix(oldColor, newColor):
-    ### TODO: Write two functions. One for only one metro approaching, one to blink between two
-    # Make an if test. If odd number, choose one color, if even choose the other.
-
-    # This is for one color
     stepArray = np.zeros((frames, 101, 3))
 
-    directionOne = np.unique(np.where(newColor[:,0:3]==[0,0,0]))
-    directionTwo = np.unique(np.where(newColor[:,3:6]==[0,0,0]))
+    directionOne = np.unique(np.where(newColor[:,0:3]!=[0,0,0]))
+    directionTwo = np.unique(np.where(newColor[:,3:6]!=[0,0,0]))
     directionBoth = np.unique(np.where((newColor[:,0:3]!=[0,0,0]) & (newColor[:,3:6]!=[0,0,0])))
-    print(directionBoth)
 
     for index in directionOne:
         red_diff = newColor[index,0] - oldColor[index,0]
