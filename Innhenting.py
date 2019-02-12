@@ -240,7 +240,7 @@ def GenerateFadeMatrix(oldColor, newColor):
 
         i = 0
         while i < frames:
-            stepArray[i,index,0] = oldColor[index,0] + i*4 * red_diff / frames
+            stepArray[i,index,0] = oldColor[index,0] + i * red_diff / frames
             stepArray[i,index,1] = oldColor[index,1] + i * green_diff / frames
             stepArray[i,index,2] = oldColor[index,2] + i * blue_diff / frames
             i+=1
