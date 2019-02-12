@@ -23,13 +23,13 @@ pixels = neopixel.NeoPixel(pixel_pin, num_pixels, brightness=1, auto_write=False
 
 
 ### Edit these to change light properties
-timeToLight = 120
+timeToLight = 90
 minBrightness = 0.2
 maxBrightness = 1
-secondsBetweenCalls = 10
+secondsBetweenCalls = 30
 stepsPerSecond = 2
-lowestRGBSum = 10
-lowestRGBValue = 5
+lowestRGBSum = 20
+lowestRGBValue = 6
 frames = int(secondsBetweenCalls * stepsPerSecond * 1.1)
 
 lightValue = np.array([(60, 200, 255), (255, 60, 0), (255, 45, 255), (0, 0, 255), (0, 255, 0), (0,0,0)])
@@ -192,7 +192,7 @@ def ChangeLight():
         print("Imported Data")
         time.sleep(2)
 
-
+    
     if frameCounter == secondsBetweenCalls * stepsPerSecond:
         CreateMatrix(lightValueMatrix)
     frameCounter += 1
@@ -227,22 +227,24 @@ def CreateColor(dataMatrix):
 
 def GenerateFadeMatrix(oldColor, newColor):
     stepArray = np.zeros((frames, 101, 3))
+    newColor = np.array(newColor)
+    oldColor = np.array(oldColor)
+    directionOne = np.unique(np.where((newColor[:,0:3]!=[0,0,0])&(newColor[:,3:6]==[0,0,0]))[0])
+    directionTwo = np.unique(np.where((newColor[:,3:6]!=[0,0,0])&(newColor[:,0:3]==[0,0,0]))[0])
+    directionBoth = np.unique(np.where((newColor[:,0:3]!=[0,0,0]) & (newColor[:,3:6]!=[0,0,0]))[0])
 
-    directionOne = np.unique(np.where(newColor[:,0:3]!=[0,0,0]))
-    directionTwo = np.unique(np.where(newColor[:,3:6]!=[0,0,0]))
-    directionBoth = np.unique(np.where((newColor[:,0:3]!=[0,0,0]) & (newColor[:,3:6]!=[0,0,0])))
-
-    for index in directionOne:
+    for index in directionOne:        
         red_diff = newColor[index,0] - oldColor[index,0]
         green_diff = newColor[index,1] - oldColor[index,1]
         blue_diff  = newColor[index,2] - oldColor[index,2]
 
         i = 0
         while i < frames:
-            stepArray[i,index,0] = oldColor[index,0] + i * red_diff / frames
+            stepArray[i,index,0] = oldColor[index,0] + i*4 * red_diff / frames
             stepArray[i,index,1] = oldColor[index,1] + i * green_diff / frames
             stepArray[i,index,2] = oldColor[index,2] + i * blue_diff / frames
             i+=1
+            
 
     for index in directionTwo:
         red_diff = newColor[index,3] - oldColor[index,0]
@@ -255,16 +257,17 @@ def GenerateFadeMatrix(oldColor, newColor):
             stepArray[i,index,1] = oldColor[index,1] + i * green_diff / frames
             stepArray[i,index,2] = oldColor[index,2] + i * blue_diff / frames
             i+=1
+            
     
-    for index in directionBoth:
+    for index in directionBoth:    
         red_diffOne = newColor[index,0] - oldColor[index,0]
         green_diffOne = newColor[index,1] - oldColor[index,1]
         blue_diffOne  = newColor[index,2] - oldColor[index,2]
-        
+            
         red_diffTwo = newColor[index,3] - oldColor[index,0]
         green_diffTwo = newColor[index,4] - oldColor[index,1]
         blue_diffTwo  = newColor[index,5] - oldColor[index,2]
-        
+            
         i = 0
         switch = 0
         while i < frames:
@@ -281,6 +284,7 @@ def GenerateFadeMatrix(oldColor, newColor):
                 if i % 3 == 0:
                     switch = 0
             i += 1
+            
 
     stepArray[stepArray > 255*maxBrightness] = 255*maxBrightness
     stepArray[stepArray.sum(axis=2) < lowestRGBSum] = [0,0,0]
